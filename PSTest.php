@@ -87,7 +87,7 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
         $this->emDebug("Starting getAutonotifyPlugins");
         //echo "Starting getAutonotifyPlugins";
 
-        $an_sql = "SELECT l.project_id,rp.app_title, l.sql_log, l.description,max(l.ts) ".
+        $an_sql = "SELECT l.project_id,rp.app_title, l.sql_log, l.description,max(l.ts) as max_ts ".
             "FROM redcap_log_event l ".
             "inner join redcap_projects rp ".
             "on l.project_id = rp.project_id ".
@@ -137,7 +137,7 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
                          'project_id' => $row['project_id'],
                          'app_title'  => $row['app_title'],
                          'description'  => $row['description'],
-                         'max_ts'  => $row['max(1.ts)'],
+                         'max_ts'  => $row['max_ts'],
                          'pre_script_det_url'  => $pre,
                          'post_script_det_url'  => $post
                      );
