@@ -12,23 +12,78 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
 
 
     public function getPlugins($plugin_name) {
+        $return_array = null;
         $this->emDebug("Starting getPlugins");
         //echo "Starting getPlugins";
+
+        $p_sql = sprintf("select '%s' as type,project_id, data_entry_trigger_url ".
+                         "from redcap_projects where data_entry_trigger_url like '%%%s%%' ".
+                         "and status != 2 and completed_time is null order by 2 desc;",
+        prep($plugin_name),
+        prep($plugin_name));
+
+        $this->emDebug($p_sql);
+        $q = db_query($p_sql);
+
+        while ($row = db_fetch_assoc($q)) {
+            $this->emDebug($row);
+            $return_array[] = array(
+                'type'                   => $row['type'],
+                'project_id'             => $row['project_id'],
+                'data_entry_trigger_url'=>$row['data_entry_trigger_url']
+            );
+        }
+
+        $header = array(
+            'type',
+            'project_id',
+            'data_entry_trigger_url'
+        );
+        if (!empty($return_array)) {
+            $this->downloadCSVFile("plugin_by_name.csv", $header, $return_array);
+        }
+
+
         $this->emDebug("Done with getPlugins");
 
     }
 
-    public function getCountPlugins($plugin_name) {
+    public function getCountPlugins() {
         $this->emDebug("Starting getCountPlugins");
         //echo "Starting getCountPlugins";
 
+        $gp_sql = "select distinct(data_entry_trigger_url), ".
+            "count(data_entry_trigger_url) as count ".
+            "from redcap_projects ".
+            "where data_entry_trigger_url is not null ".
+            "and status != 2 ".
+            "and completed_time is null ".
+            "group by data_entry_trigger_url ".
+            "order by 2 desc";
 
+        $this->emDebug($gp_sql);
+        $q = db_query($gp_sql);
+
+        while ($row = db_fetch_assoc($q)) {
+            $this->emDebug($row);
+            $return_array[] = array(
+                'data_entry_trigger_url'=>$row['data_entry_trigger_url'],
+                'count'                 =>$row['count']
+            );
+        }
+
+
+        $header = array(
+            'data_entry_trigger_url',
+            'count'
+        );
+        $this->downloadCSVFile("CountPlugins.csv", $header, $return_array);
         $this->emDebug("Done with getCountPlugins");
 
     }
 
      function getAutonotifyPlugins() {
-        $return_array = null;
+         $return_array = null;
         $this->emDebug("Starting getAutonotifyPlugins");
         //echo "Starting getAutonotifyPlugins";
 
@@ -91,7 +146,8 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
              }
          }
 
-         $header = array(             'project_id',
+         $header = array(
+             'project_id',
              'app_title',
              'description',
              'max_ts',

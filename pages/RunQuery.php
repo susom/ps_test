@@ -26,6 +26,6 @@ if (isset($_POST['check_det'])) {
 
 if (isset($_POST['check_an_det'])) {
     $module->emDebug("Checking DET in autonotify triggers");
-    $module->getAutonotifyPlugins($file, $origin_pid, $first_ct);
+    $module->getAutonotifyPlugins();
     exit;
 }
