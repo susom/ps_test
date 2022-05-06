@@ -20,7 +20,7 @@ if (isset($_POST['get_plugins'])) {
 
 if (isset($_POST['check_det'])) {
     $module->emDebug("Checking DET");
-    $module->getCountPlugins($file, $origin_pid);
+    $module->getCountPlugins();
     exit;
 }
 
