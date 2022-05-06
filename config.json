@@ -10,15 +10,11 @@
             "institution": "Stanford University"
         }
 	],
-    "framework-version": 5,
-
 	"permissions": [
     ],
     "crons": [
     ],
-
 	"enable-every-page-hooks-on-system-pages": false,
-
 	"links": {
 		"project": [
             {
