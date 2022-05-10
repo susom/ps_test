@@ -87,7 +87,8 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
         $this->emDebug("Starting getAutonotifyPlugins");
         //echo "Starting getAutonotifyPlugins";
 
-        $an_sql = "SELECT l.project_id,rp.app_title, l.sql_log, l.description,max(l.ts) as max_ts ".
+        $an_sql = "SELECT l.project_id,rp.app_title, l.sql_log, l.description,max(l.ts) as max_ts, ".
+            "rp.last_logged_event ".
             "FROM redcap_log_event l ".
             "inner join redcap_projects rp ".
             "on l.project_id = rp.project_id ".
@@ -97,7 +98,7 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
             "l.sql_log  like'\{\"triggers%' and ".
             "(l.sql_log like  '%plugins%' OR ".
             "l.sql_log like  '\%data_edit\%') ".
-            "and rp.data_entry_trigger_url is not null ".
+            "and rp.data_entry_trigger_url like '%autonotify%' ".
             "and l.project_id in (".
             "'81', '73', '70','65',".
             "'238','1419','3547','3606','3619','3928','4046','4288','4304','4698','4730','4821','4864','5242', ".
@@ -131,15 +132,30 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
                  $pre = $jarray['pre_script_det_url'];
                  $post = $jarray['post_script_det_url'];
 
+                 if (!empty($jarray['triggers'])) {
+                     $a_trigger = '';
+                     $a_triggers = json_decode($jarray['triggers'], true);
+                     foreach ($a_triggers as $i => $j) {
+                         //$a_trigger .= implode(",",$j);
+                         $a_trigger .= "TRIGGER " . $i . PHP_EOL;
+                         foreach ($j as $k => $l) {
+                             $a_trigger .= $k . " : " . $l . PHP_EOL;
+                         }
+                     }
+
+                 }
+
                  if((!empty($pre)) OR (!empty($post))) {
                      //we have a pre or post trigger set in autonotify, so add to return array
                      $return_array[] = array(
                          'project_id' => $row['project_id'],
                          'app_title'  => $row['app_title'],
                          'description'  => $row['description'],
+                         'last_logged'  => $row['last_logged_event'],
                          'max_ts'  => $row['max_ts'],
                          'pre_script_det_url'  => $pre,
-                         'post_script_det_url'  => $post
+                         'post_script_det_url'  => $post,
+                         'trigger'             => ($a_trigger)
                      );
 
                  }
@@ -150,9 +166,11 @@ class PSTest extends \ExternalModules\AbstractExternalModule {
              'project_id',
              'app_title',
              'description',
+             'last_logged_event',
              'max_ts',
              'pre_script_det_url',
-             'post_script_det_url'
+             'post_script_det_url',
+             'autonotify_trigger'
          );
 
          $this->downloadCSVFile("AutonotifyPlugins.csv", $header, $return_array);
